@@ -1,8 +1,8 @@
-package utils
+package response
 
 import "encoding/json"
 
-func JsonStatus(message string) []byte {
+func Error(message string) []byte {
     m, _ := json.Marshal(struct {
         Message string `json:"message"`
     }{

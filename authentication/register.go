@@ -4,9 +4,9 @@ import (
     "encoding/json"
     "fmt"
     "github.com/alirezadp10/letsgo/internal/db"
+    "github.com/alirezadp10/letsgo/internal/form_requests"
     "github.com/alirezadp10/letsgo/internal/models"
-    "github.com/alirezadp10/letsgo/internal/utils"
-    "io"
+    "github.com/alirezadp10/letsgo/internal/utils/response"
     "net/http"
 )
 
@@ -20,20 +20,23 @@ func Foo(w http.ResponseWriter, r *http.Request) {
 }
 
 func Register(w http.ResponseWriter, r *http.Request) {
-    var userReq models.User
-    _ = json.NewDecoder(r.Body).Decode(&userReq)
     w.Header().Set("Content-Type", "application/json")
+    newUser, err := form_requests.RegisterFormRequest(r)
 
-    newUser := models.User{Name: userReq.Name, Username: userReq.Username, Password: userReq.Password}
-    result := db.Connection().Create(&newUser)
-    if result.Error != nil {
-        w.WriteHeader(http.StatusInternalServerError)
-        io.WriteString(w, string(utils.JsonStatus(result.Error.Error())))
+    if err != nil {
+        w.WriteHeader(http.StatusUnprocessableEntity)
+        w.Write(response.Error(err.Error()))
         return
     }
 
-    w.WriteHeader(http.StatusOK)
-    response := map[string]interface{}{
+    result := db.Connection().Create(&newUser)
+    if result.Error != nil {
+        w.WriteHeader(http.StatusInternalServerError)
+        w.Write(response.Error(result.Error.Error()))
+        return
+    }
+
+    jsonResponse, _ := json.Marshal(map[string]interface{}{
         "status":  "success",
         "message": "User registered successfully",
         "data": map[string]interface{}{
@@ -43,7 +46,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
             "created_at": newUser.CreatedAt,
             "updated_at": newUser.UpdatedAt,
         },
-    }
-    jsonResponse, _ := json.Marshal(response)
+    })
+    w.WriteHeader(http.StatusOK)
     _, _ = w.Write(jsonResponse)
 }
