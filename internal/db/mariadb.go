@@ -1,6 +1,8 @@
 package db
 
 import (
+    "fmt"
+    "github.com/alirezadp10/letsgo/internal/configs"
     "gorm.io/driver/mysql"
     "gorm.io/gorm"
     "gorm.io/gorm/logger"
@@ -21,7 +23,14 @@ func Connection() *gorm.DB {
             },
         )
 
-        dsn := "root:password@tcp(127.0.0.1:3306)/letsgo?charset=utf8mb4&parseTime=True&loc=Local"
+        dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+            configs.Mariadb()["user"],
+            configs.Mariadb()["password"],
+            configs.Mariadb()["host"],
+            configs.Mariadb()["port"],
+            configs.Mariadb()["database"],
+        )
+
         db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
             Logger: newLogger,
         })

@@ -18,7 +18,7 @@ func RegisterFormRequest(r *http.Request) (models.User, error) {
     }
 
     // Hash the password and handle errors
-    hash, err := utils.HashPassword(userReq.Password)
+    hash, err := utils.Hash(userReq.Password)
     if err != nil {
         return models.User{}, fmt.Errorf("failed to hash password: %w", err)
     }

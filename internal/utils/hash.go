@@ -1,13 +1,17 @@
 package utils
 
-import "golang.org/x/crypto/bcrypt"
+import (
+    "golang.org/x/crypto/bcrypt"
+)
 
-// HashPassword hashes a plain-text password using bcrypt.
-func HashPassword(password string) (string, error) {
-    // Generate a hashed password using bcrypt
-    hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+func Hash(input string) (string, error) {
+    hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input), bcrypt.DefaultCost)
     if err != nil {
         return "", err
     }
     return string(hashedPassword), nil
+}
+
+func Verify(input, hash string) bool {
+    return bcrypt.CompareHashAndPassword([]byte(hash), []byte(input)) == nil
 }

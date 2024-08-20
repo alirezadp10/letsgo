@@ -6,7 +6,7 @@ import (
     "github.com/alirezadp10/letsgo/internal/db"
     "github.com/alirezadp10/letsgo/internal/form_requests"
     "github.com/alirezadp10/letsgo/internal/models"
-    "github.com/alirezadp10/letsgo/internal/utils/response"
+    "github.com/alirezadp10/letsgo/internal/utils"
     "net/http"
 )
 
@@ -25,14 +25,14 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
     if err != nil {
         w.WriteHeader(http.StatusUnprocessableEntity)
-        w.Write(response.Error(err.Error()))
+        w.Write(utils.Error(err.Error()))
         return
     }
 
     result := db.Connection().Create(&newUser)
     if result.Error != nil {
         w.WriteHeader(http.StatusInternalServerError)
-        w.Write(response.Error(result.Error.Error()))
+        w.Write(utils.Error(result.Error.Error()))
         return
     }
 
