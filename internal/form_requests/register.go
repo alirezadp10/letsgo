@@ -24,7 +24,7 @@ func RegisterFormRequest(r *http.Request) (models.User, error) {
     }
 
     // Validate the user request
-    if err := validate(userReq); err != nil {
+    if err := validateRegisterForm(userReq); err != nil {
         return models.User{}, fmt.Errorf("validation failed: %w", err)
     }
 
@@ -38,8 +38,8 @@ func RegisterFormRequest(r *http.Request) (models.User, error) {
     return newUser, nil
 }
 
-func validate(userReq models.User) error {
-    if userReq.Username == "" || userReq.Name == "" || userReq.Password == "" {
+func validateRegisterForm(u models.User) error {
+    if u.Username == "" || u.Name == "" || u.Password == "" {
         return errors.New("missing required fields")
     }
     return nil

@@ -2,23 +2,43 @@ package authentication
 
 import (
     "encoding/json"
-    "fmt"
+    "errors"
+    "github.com/alirezadp10/letsgo/internal/db"
+    "github.com/alirezadp10/letsgo/internal/form_requests"
+    "github.com/alirezadp10/letsgo/internal/models"
     "github.com/alirezadp10/letsgo/internal/utils"
-    "io"
+    "gorm.io/gorm"
     "net/http"
 )
 
 func Login(w http.ResponseWriter, r *http.Request) {
-    body, _ := io.ReadAll(r.Body)
-
-    fmt.Printf("%v", string(body))
-
-    //utils.Verify()
-
-    //passwordToCheck := "mySecretPassword"
-
     w.Header().Set("Content-Type", "application/json")
-    token, _ := utils.GenerateJWT("123")
+
+    userReq, err := form_requests.LoginFormRequest(r)
+
+    if err != nil {
+        w.WriteHeader(http.StatusUnprocessableEntity)
+        w.Write(utils.Error(err.Error()))
+        return
+    }
+
+    var user models.User
+
+    result := db.Connection().Where("username = ?", userReq.Username).Find(&user)
+
+    if result.Error != nil && errors.Is(result.Error, gorm.ErrRecordNotFound) {
+        w.WriteHeader(http.StatusBadRequest)
+        w.Write(utils.Error("Username or password is incorrect."))
+        return
+    }
+
+    if !utils.Verify(userReq.Password, user.Password) {
+        w.WriteHeader(http.StatusBadRequest)
+        w.Write(utils.Error("Username or password is incorrect."))
+        return
+    }
+
+    token, _ := utils.GenerateJWT(user.Username)
 
     jsonResponse, _ := json.Marshal(map[string]interface{}{
         "status":  "success",
