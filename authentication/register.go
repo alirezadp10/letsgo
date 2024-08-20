@@ -2,22 +2,11 @@ package authentication
 
 import (
     "encoding/json"
-    "fmt"
     "github.com/alirezadp10/letsgo/internal/db"
     "github.com/alirezadp10/letsgo/internal/form_requests"
-    "github.com/alirezadp10/letsgo/internal/models"
     "github.com/alirezadp10/letsgo/internal/utils"
     "net/http"
 )
-
-func Foo(w http.ResponseWriter, r *http.Request) {
-    var users []models.User
-    db.Connection().Find(&users)
-    jsonData, _ := json.Marshal(users)
-    fmt.Println(string(jsonData))
-    w.Header().Set("Content-Type", "application/json")
-    _, _ = w.Write(jsonData)
-}
 
 func Register(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "application/json")

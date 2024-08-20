@@ -15,6 +15,5 @@ func main() {
     r := mux.NewRouter()
     r.HandleFunc("/login", authentication.Login).Methods("POST")
     r.HandleFunc("/register", authentication.Register).Methods("POST")
-    r.HandleFunc("/foo", authentication.Foo).Methods("POST")
     log.Fatal(http.ListenAndServe(":8000", r))
 }
