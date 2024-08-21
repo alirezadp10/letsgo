@@ -1,25 +1,23 @@
 package authentication
 
 import (
-    "encoding/json"
     "errors"
     "github.com/alirezadp10/letsgo/internal/db"
     "github.com/alirezadp10/letsgo/internal/form_requests"
     "github.com/alirezadp10/letsgo/internal/models"
     "github.com/alirezadp10/letsgo/internal/utils"
+    "github.com/labstack/echo/v4"
     "gorm.io/gorm"
     "net/http"
 )
 
-func Login(w http.ResponseWriter, r *http.Request) {
-    w.Header().Set("Content-Type", "application/json")
-
-    userReq, err := form_requests.LoginFormRequest(r)
+func Login(c echo.Context) error {
+    userReq, err := form_requests.LoginFormRequest(c)
 
     if err != nil {
-        w.WriteHeader(http.StatusUnprocessableEntity)
-        w.Write(utils.Error(err.Error()))
-        return
+        return c.JSON(http.StatusUnprocessableEntity, map[string]interface{}{
+            "message": err.Error(),
+        })
     }
 
     var user models.User
@@ -27,20 +25,20 @@ func Login(w http.ResponseWriter, r *http.Request) {
     result := db.Connection().Where("username = ?", userReq.Username).Find(&user)
 
     if result.Error != nil && errors.Is(result.Error, gorm.ErrRecordNotFound) {
-        w.WriteHeader(http.StatusBadRequest)
-        w.Write(utils.Error("Username or password is incorrect."))
-        return
+        return c.JSON(http.StatusUnprocessableEntity, map[string]interface{}{
+            "message": "Username or password is incorrect.",
+        })
     }
 
     if !utils.Verify(userReq.Password, user.Password) {
-        w.WriteHeader(http.StatusBadRequest)
-        w.Write(utils.Error("Username or password is incorrect."))
-        return
+        return c.JSON(http.StatusUnprocessableEntity, map[string]interface{}{
+            "message": "Username or password is incorrect.",
+        })
     }
 
     token, _ := utils.GenerateJWT(user.Username)
 
-    jsonResponse, _ := json.Marshal(map[string]interface{}{
+    return c.JSON(http.StatusOK, map[string]interface{}{
         "status":  "success",
         "message": "User logged in successfully",
         "data": map[string]interface{}{
@@ -48,6 +46,4 @@ func Login(w http.ResponseWriter, r *http.Request) {
             "expire_at":    token.ExpireAt,
         },
     })
-    w.WriteHeader(http.StatusOK)
-    _, _ = w.Write(jsonResponse)
 }

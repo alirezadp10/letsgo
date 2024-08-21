@@ -1,17 +1,16 @@
 package form_requests
 
 import (
-    "encoding/json"
     "errors"
     "fmt"
     "github.com/alirezadp10/letsgo/internal/models"
-    "net/http"
+    "github.com/labstack/echo/v4"
 )
 
-func LoginFormRequest(r *http.Request) (models.User, error) {
+func LoginFormRequest(c echo.Context) (models.User, error) {
     var userReq models.User
 
-    if err := json.NewDecoder(r.Body).Decode(&userReq); err != nil {
+    if err := c.Bind(&userReq); err != nil {
         return models.User{}, fmt.Errorf("failed to decode request body: %w", err)
     }
 

@@ -1,31 +1,29 @@
 package authentication
 
 import (
-    "encoding/json"
     "github.com/alirezadp10/letsgo/internal/db"
     "github.com/alirezadp10/letsgo/internal/form_requests"
-    "github.com/alirezadp10/letsgo/internal/utils"
+    "github.com/labstack/echo/v4"
     "net/http"
 )
 
-func Register(w http.ResponseWriter, r *http.Request) {
-    w.Header().Set("Content-Type", "application/json")
-    newUser, err := form_requests.RegisterFormRequest(r)
+func Register(c echo.Context) error {
+    newUser, err := form_requests.RegisterFormRequest(c)
 
     if err != nil {
-        w.WriteHeader(http.StatusUnprocessableEntity)
-        w.Write(utils.Error(err.Error()))
-        return
+        return c.JSON(http.StatusUnprocessableEntity, map[string]interface{}{
+            "message": err.Error(),
+        })
     }
 
     result := db.Connection().Create(&newUser)
     if result.Error != nil {
-        w.WriteHeader(http.StatusInternalServerError)
-        w.Write(utils.Error(result.Error.Error()))
-        return
+        return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+            "message": result.Error.Error(),
+        })
     }
 
-    jsonResponse, _ := json.Marshal(map[string]interface{}{
+    return c.JSON(http.StatusOK, map[string]interface{}{
         "status":  "success",
         "message": "User registered successfully",
         "data": map[string]interface{}{
@@ -36,6 +34,4 @@ func Register(w http.ResponseWriter, r *http.Request) {
             "updated_at": newUser.UpdatedAt,
         },
     })
-    w.WriteHeader(http.StatusOK)
-    _, _ = w.Write(jsonResponse)
 }
