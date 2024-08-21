@@ -4,7 +4,7 @@ import (
     "errors"
     "fmt"
     "github.com/alirezadp10/letsgo/internal/models"
-    "github.com/alirezadp10/letsgo/internal/utils"
+    "github.com/alirezadp10/letsgo/pkg/utils"
     "github.com/labstack/echo/v4"
 )
 
